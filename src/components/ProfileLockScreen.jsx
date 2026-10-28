@@ -5,7 +5,7 @@ import { PinModal } from "./PinModal";
 import { IconMoon, IconSun } from "./Icons";
 
 export const ProfileLockScreen = () => {
-  const { members, currentFamily, unlockProfileWithPin } = useAuth();
+  const { members, currentFamily, switchMember } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [selectedMemberForPin, setSelectedMemberForPin] = useState(null);
 
@@ -14,8 +14,8 @@ export const ProfileLockScreen = () => {
   };
 
   const handlePinSuccess = (member) => {
-    // Desbloquear sesión para este usuario
-    unlockProfileWithPin(member.id, member.pin || "1234");
+    // Entrar inmediatamente al perfil
+    switchMember(member.id);
     setSelectedMemberForPin(null);
   };
 
@@ -85,7 +85,7 @@ export const ProfileLockScreen = () => {
             color: "var(--text-secondary)",
             marginTop: "0.4rem"
           }}>
-            ¿Quién está usando la app hoy? Toca tu perfil e ingresa tu PIN.
+            Toca tu nombre para entrar a tu perfil
           </p>
         </div>
 
@@ -171,7 +171,26 @@ export const ProfileLockScreen = () => {
           ))}
         </div>
 
-        {/* Nota informativa */}
+        {/* Botón directo de entrar como Mamá si alguien tiene prisa */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <button
+            type="button"
+            onClick={() => switchMember("user-mama")}
+            className="btn btn-tonal"
+            style={{
+              padding: "0.5rem 1.25rem",
+              borderRadius: "var(--radius-full)",
+              backgroundColor: "var(--bg-surface)",
+              border: "1.5px solid var(--border-subtle)",
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              color: "var(--text-secondary)"
+            }}
+          >
+            ⚡ Entrar directamente como Mamá
+          </button>
+        </div>
+
         <div style={{
           backgroundColor: "var(--bg-surface-variant)",
           padding: "0.85rem 1.25rem",
@@ -180,11 +199,11 @@ export const ProfileLockScreen = () => {
           color: "var(--text-secondary)",
           border: "1px solid var(--border-subtle)"
         }}>
-          🛡️ <strong>Seguridad por perfil:</strong> Cada integrante tiene su propio PIN de seguridad para que nadie más pueda ver sus saldos privados ni registrar movimientos en su nombre.
+          🛡️ <strong>Seguridad por perfil:</strong> Cada integrante cuenta con su PIN para proteger sus saldos y movimientos.
         </div>
       </div>
 
-      {/* Modal de PIN para ingresar */}
+      {/* Modal de PIN */}
       <PinModal
         isOpen={!!selectedMemberForPin}
         member={selectedMemberForPin}

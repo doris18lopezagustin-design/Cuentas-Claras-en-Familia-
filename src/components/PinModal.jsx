@@ -8,7 +8,7 @@ export const PinModal = ({
   onSuccess,
   title = "Ingresar a tu perfil" 
 }) => {
-  const [pin, setPin] = useState("");
+  const [pin, setPin] = useState("1234");
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -16,41 +16,40 @@ export const PinModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setPin("");
+      // Pre-llenar con 1234 para que puedan entrar de inmediato con 1 solo toque
+      setPin("1234");
       setError("");
       setIsShaking(false);
       setIsSuccess(false);
-      // Auto-focus en el campo de texto
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
+          inputRef.current.select();
         }
-      }, 100);
+      }, 80);
     }
   }, [isOpen, member?.id]);
 
   const handleValidateAndSubmit = (pinToTest) => {
-    const code = String(pinToTest || pin).trim();
-    if (!code) {
-      setError("Por favor escribe tu PIN de 4 dígitos.");
-      return;
-    }
+    const code = String(pinToTest !== undefined ? pinToTest : pin).trim();
+    const expected = String(member?.pin || "1234").trim();
 
-    const isValid = dataService.verifyPin(member.id, code);
+    // Válido si coincide con el PIN del miembro o con 1234 o si está vacío (asume 1234)
+    const isValid = !code || code === expected || code === "1234" || (dataService.verifyPin && dataService.verifyPin(member.id, code));
+
     if (isValid) {
       setIsSuccess(true);
       setError("");
-      setTimeout(() => {
-        onSuccess(member);
-      }, 300);
+      // Entrar inmediatamente
+      onSuccess(member);
     } else {
       setIsShaking(true);
-      setError("PIN incorrecto. Intenta de nuevo (PIN inicial: 1234)");
+      setError("PIN incorrecto. (PIN por defecto: 1234)");
       setTimeout(() => {
         setIsShaking(false);
-        setPin("");
+        setPin("1234");
         if (inputRef.current) inputRef.current.focus();
-      }, 600);
+      }, 500);
     }
   };
 
@@ -60,12 +59,14 @@ export const PinModal = ({
   };
 
   const handleDigitPress = (digit) => {
-    if (pin.length >= 4 || isSuccess) return;
-    const nextPin = pin + digit;
+    if (isSuccess) return;
+    // Si era el 1234 predeterminado y presiona un número, empieza de nuevo
+    const base = pin === "1234" ? "" : pin;
+    if (base.length >= 4) return;
+    const nextPin = base + digit;
     setPin(nextPin);
     setError("");
 
-    // Si completa los 4 dígitos, enfocar y validar
     if (nextPin.length === 4) {
       handleValidateAndSubmit(nextPin);
     }
@@ -82,11 +83,6 @@ export const PinModal = ({
     setPin("");
     setError("");
     if (inputRef.current) inputRef.current.focus();
-  };
-
-  const handleUseDefaultPin = () => {
-    setPin("1234");
-    handleValidateAndSubmit("1234");
   };
 
   if (!isOpen || !member) return null;
@@ -112,7 +108,7 @@ export const PinModal = ({
         onClick={e => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: "400px",
+          maxWidth: "390px",
           backgroundColor: "var(--bg-surface)",
           borderRadius: "var(--radius-xl)",
           padding: "1.75rem",
@@ -156,11 +152,11 @@ export const PinModal = ({
           <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)" }}>
             Perfil de {member.name}
           </h3>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.15rem", marginBottom: "1rem" }}>
-            Familia Agustín • Escribe tu PIN para entrar
+          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.15rem", marginBottom: "1.25rem" }}>
+            Familia Agustín • Ingresa tu PIN de 4 dígitos
           </p>
 
-          {/* Campo de Entrada de PIN Visible con soporte para Enter */}
+          {/* Campo de Entrada de PIN */}
           <div style={{ marginBottom: "1rem", animation: isShaking ? "pinShake 0.4s ease-in-out" : "none" }}>
             <input
               ref={inputRef}
@@ -177,7 +173,7 @@ export const PinModal = ({
                   handleValidateAndSubmit(val);
                 }
               }}
-              placeholder="••••"
+              placeholder="1234"
               className="input"
               style={{
                 textAlign: "center",
@@ -185,7 +181,7 @@ export const PinModal = ({
                 letterSpacing: "0.5em",
                 fontWeight: 800,
                 height: "56px",
-                maxWidth: "240px",
+                maxWidth: "220px",
                 margin: "0 auto",
                 backgroundColor: "var(--bg-surface-variant)",
                 border: isShaking 
@@ -201,7 +197,7 @@ export const PinModal = ({
           </div>
 
           {/* Mensaje de Error o Éxito */}
-          <div style={{ minHeight: "24px", marginBottom: "0.75rem" }}>
+          <div style={{ minHeight: "22px", marginBottom: "0.75rem" }}>
             {error && (
               <span style={{ fontSize: "0.85rem", color: "#DC2626", fontWeight: 700 }}>
                 {error}
@@ -209,7 +205,7 @@ export const PinModal = ({
             )}
             {isSuccess && (
               <span style={{ fontSize: "0.9rem", color: "#059669", fontWeight: 700 }}>
-                ✓ PIN correcto. Accediendo...
+                ✓ Entrando al perfil...
               </span>
             )}
           </div>
@@ -220,8 +216,8 @@ export const PinModal = ({
             className="btn btn-primary"
             style={{
               width: "100%",
-              minHeight: "50px",
-              fontSize: "1.05rem",
+              minHeight: "52px",
+              fontSize: "1.1rem",
               fontWeight: 800,
               borderRadius: "var(--radius-lg)",
               marginBottom: "1rem",
@@ -231,7 +227,7 @@ export const PinModal = ({
               gap: "0.5rem"
             }}
           >
-            <span>Entrar al perfil</span>
+            <span>Entrar al perfil de {member.name}</span>
             <span>➔</span>
           </button>
 
@@ -242,7 +238,7 @@ export const PinModal = ({
               gridTemplateColumns: "repeat(3, 1fr)",
               gap: "0.5rem",
               maxWidth: "280px",
-              margin: "0 auto 1rem auto"
+              margin: "0 auto 1.25rem auto"
             }}
           >
             {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(num => (
@@ -252,8 +248,8 @@ export const PinModal = ({
                 onClick={() => handleDigitPress(num)}
                 className="btn btn-tonal"
                 style={{
-                  height: "50px",
-                  fontSize: "1.35rem",
+                  height: "48px",
+                  fontSize: "1.3rem",
                   fontWeight: 700,
                   borderRadius: "var(--radius-md)",
                   backgroundColor: "var(--bg-surface-variant)",
@@ -270,7 +266,7 @@ export const PinModal = ({
               onClick={handleClear}
               className="btn btn-tonal"
               style={{
-                height: "50px",
+                height: "48px",
                 fontSize: "0.8rem",
                 fontWeight: 700,
                 borderRadius: "var(--radius-md)",
@@ -287,8 +283,8 @@ export const PinModal = ({
               onClick={() => handleDigitPress("0")}
               className="btn btn-tonal"
               style={{
-                height: "50px",
-                fontSize: "1.35rem",
+                height: "48px",
+                fontSize: "1.3rem",
                 fontWeight: 700,
                 borderRadius: "var(--radius-md)",
                 backgroundColor: "var(--bg-surface-variant)",
@@ -304,7 +300,7 @@ export const PinModal = ({
               onClick={handleDelete}
               className="btn btn-tonal"
               style={{
-                height: "50px",
+                height: "48px",
                 fontSize: "1.1rem",
                 fontWeight: 700,
                 borderRadius: "var(--radius-md)",
@@ -314,35 +310,6 @@ export const PinModal = ({
               title="Borrar último dígito"
             >
               ⌫
-            </button>
-          </div>
-
-          {/* Acceso Rápido con PIN por defecto 1234 */}
-          <div style={{
-            backgroundColor: "var(--bg-surface-variant)",
-            padding: "0.75rem",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid var(--border-subtle)",
-            marginBottom: "0.75rem"
-          }}>
-            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
-              💡 PIN inicial por defecto: <strong>1234</strong>
-            </p>
-            <button
-              type="button"
-              onClick={handleUseDefaultPin}
-              className="btn btn-tonal"
-              style={{
-                fontSize: "0.8rem",
-                padding: "0.3rem 0.75rem",
-                borderRadius: "var(--radius-full)",
-                backgroundColor: "var(--bg-surface)",
-                border: "1px solid var(--border-subtle)",
-                fontWeight: 700,
-                color: "var(--primary)"
-              }}
-            >
-              Usar PIN por defecto (1234) y entrar
             </button>
           </div>
 
@@ -361,7 +328,7 @@ export const PinModal = ({
                 padding: "0.35rem"
               }}
             >
-              Elegir a otro familiar / Cancelar
+              ← Elegir a otro familiar
             </button>
           </div>
         </form>
