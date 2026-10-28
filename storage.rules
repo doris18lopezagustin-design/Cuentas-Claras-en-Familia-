@@ -1,0 +1,9 @@
+﻿rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Comprobantes de movimientos: solo lectura y subida por usuarios autenticados participantes
+    match /receipts/{familyId}/{movementId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

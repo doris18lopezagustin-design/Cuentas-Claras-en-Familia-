@@ -1,0 +1,598 @@
+﻿/* ==========================================================================
+   Cuentas Claras en Familia - Sistema de Diseño Material Design 3
+   ========================================================================== */
+
+:root {
+  /* Escala de texto base */
+  --font-base: 16px;
+  --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Paleta Tema Claro - Tonos suaves, amables y tranquilos */
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-variant: #F1F5F9;
+  --bg-surface-elevated: #FFFFFF;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-on-primary: #FFFFFF;
+  
+  --border-subtle: #E2E8F0;
+  --border-focus: #0D9488;
+  
+  /* Color principal de la marca (Teal cálido / Esmeralda) */
+  --primary: #0D9488;
+  --primary-hover: #0F766E;
+  --primary-light: #CCFBF1;
+  --primary-text: #115E59;
+  
+  /* Colores de Saldo Suaves y No Alarmantes (NUNCA ROJO) */
+  --balance-favor-bg: #ECFDF5;
+  --balance-favor-border: #A7F3D0;
+  --balance-favor-text: #065F46;
+  --balance-favor-badge: #059669;
+
+  --balance-pendiente-bg: #FFFBEB;
+  --balance-pendiente-border: #FDE68A;
+  --balance-pendiente-text: #92400E;
+  --balance-pendiente-badge: #D97706;
+
+  --balance-mano-bg: #F8FAFC;
+  --balance-mano-border: #E2E8F0;
+  --balance-mano-text: #475569;
+  --balance-mano-badge: #64748B;
+  
+  /* Insignias de Estado */
+  --badge-sin-confirmar-bg: #FEF3C7;
+  --badge-sin-confirmar-text: #92400E;
+  
+  --badge-confirmado-bg: #D1FAE5;
+  --badge-confirmado-text: #065F46;
+  
+  --badge-en-revision-bg: #DBEAFE;
+  --badge-en-revision-text: #1E40AF;
+  
+  --badge-quitado-bg: #F1F5F9;
+  --badge-quitado-text: #64748B;
+  
+  --badge-por-enviar-bg: #E2E8F0;
+  --badge-por-enviar-text: #475569;
+
+  /* WhatsApp */
+  --whatsapp-green: #25D366;
+  --whatsapp-hover: #1EBE5D;
+  --whatsapp-bg: #DCFCE7;
+  --whatsapp-text: #166534;
+
+  /* Radios suaves Material 3 */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Sombras ligeras y calmadas */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-sheet: 0 -4px 20px rgba(15, 23, 42, 0.12);
+
+  /* Transiciones suaves */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Tema Oscuro de Alto Contraste y Suave a la Vista
+   ========================================================================== */
+[data-theme="dark"] {
+  --bg-app: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-surface-variant: #334155;
+  --bg-surface-elevated: #283548;
+  
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-on-primary: #FFFFFF;
+  
+  --border-subtle: #334155;
+  --border-focus: #2DD4BF;
+  
+  --primary: #14B8A6;
+  --primary-hover: #2DD4BF;
+  --primary-light: #134E4A;
+  --primary-text: #5EEAD4;
+  
+  --balance-favor-bg: #064E3B;
+  --balance-favor-border: #047857;
+  --balance-favor-text: #A7F3D0;
+  
+  --balance-pendiente-bg: #451A03;
+  --balance-pendiente-border: #92400E;
+  --balance-pendiente-text: #FDE68A;
+
+  --balance-mano-bg: #1E293B;
+  --balance-mano-border: #334155;
+  --balance-mano-text: #CBD5E1;
+
+  --badge-sin-confirmar-bg: #78350F;
+  --badge-sin-confirmar-text: #FEF3C7;
+  
+  --badge-confirmado-bg: #065F46;
+  --badge-confirmado-text: #D1FAE5;
+  
+  --badge-en-revision-bg: #1E3A8A;
+  --badge-en-revision-text: #DBEAFE;
+  
+  --badge-quitado-bg: #334155;
+  --badge-quitado-text: #94A3B8;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.5);
+  --shadow-sheet: 0 -4px 25px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   Ajuste de Tamaño de Letra (Normal, Grande, Muy Grande)
+   ========================================================================== */
+html[data-font-size="normal"] { font-size: 16px; }
+html[data-font-size="large"] { font-size: 18.5px; }
+html[data-font-size="xlarge"] { font-size: 21px; }
+
+/* Reseteo y Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Enfoque visible con teclado (Accesibilidad total) */
+:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Botones Material 3 - Mínimo 48px de altura, siempre con Ícono y Texto
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.75rem 1.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Botón Principal Destacado */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botón Secundario Tonal / Suave */
+.btn-tonal {
+  background-color: var(--bg-surface-variant);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.btn-tonal:hover:not(:disabled) {
+  background-color: var(--border-subtle);
+}
+
+/* Botón Bordeado */
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-subtle);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--bg-surface-variant);
+}
+
+/* Botón WhatsApp */
+.btn-whatsapp {
+  background-color: var(--whatsapp-green);
+  color: #FFFFFF;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+  background-color: var(--whatsapp-hover);
+}
+
+/* Botón Flotante / Destacado "+ Anotar" */
+.btn-anotar {
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  min-height: 54px;
+  padding: 0.85rem 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-anotar:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Botón Grande de Modo Sencillo */
+.btn-sencillo {
+  min-height: 60px;
+  font-size: 1.25rem;
+  padding: 1rem 1.75rem;
+  border-radius: var(--radius-lg);
+}
+
+/* ==========================================================================
+   Tarjetas Material Design 3
+   ========================================================================== */
+.card {
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* Tarjeta interactiva clickeable */
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+}
+
+/* Tarjetas de Saldo según estado */
+.card-saldo-favor {
+  background-color: var(--balance-favor-bg);
+  border-color: var(--balance-favor-border);
+  color: var(--balance-favor-text);
+}
+
+.card-saldo-pendiente {
+  background-color: var(--balance-pendiente-bg);
+  border-color: var(--balance-pendiente-border);
+  color: var(--balance-pendiente-text);
+}
+
+.card-saldo-mano {
+  background-color: var(--balance-mano-bg);
+  border-color: var(--balance-mano-border);
+  color: var(--balance-mano-text);
+}
+
+/* ==========================================================================
+   Insignias de Estado (Badges)
+   ========================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge-sin_confirmar {
+  background-color: var(--badge-sin-confirmar-bg);
+  color: var(--badge-sin-confirmar-text);
+}
+
+.badge-confirmado {
+  background-color: var(--badge-confirmado-bg);
+  color: var(--badge-confirmado-text);
+}
+
+.badge-en_revision {
+  background-color: var(--badge-en-revision-bg);
+  color: var(--badge-en-revision-text);
+}
+
+.badge-quitado {
+  background-color: var(--badge-quitado-bg);
+  color: var(--badge-quitado-text);
+  text-decoration: line-through;
+}
+
+.badge-por_enviar {
+  background-color: var(--badge-por-enviar-bg);
+  color: var(--badge-por-enviar-text);
+}
+
+/* ==========================================================================
+   Campos de Formulario e Inputs
+   ========================================================================== */
+.input, .select, .textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Monto Grande */
+.input-monto {
+  font-size: 2.25rem;
+  font-weight: 800;
+  text-align: center;
+  min-height: 68px;
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   Estructura Adaptable (Responsive Layout)
+   ========================================================================== */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-bottom: 90px; /* Espacio para barra inferior en móvil */
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+/* Barra Lateral para Computadora */
+.sidebar {
+  display: none;
+  width: 280px;
+  background-color: var(--bg-surface);
+  border-right: 1.5px solid var(--border-subtle);
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 1.5rem 1rem;
+  gap: 1rem;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--bg-surface-variant);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+  background-color: var(--primary-light);
+  color: var(--primary-text);
+}
+
+/* Barra Inferior para Celular */
+.bottom-nav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background-color: var(--bg-surface);
+  border-top: 1.5px solid var(--border-subtle);
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 0.5rem;
+  z-index: 50;
+  box-shadow: var(--shadow-sheet);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-height: 48px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bottom-nav-item.active {
+  color: var(--primary);
+}
+
+.bottom-nav-anotar {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  border-radius: 9999px;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  margin-top: -16px;
+  border: 3px solid var(--bg-surface);
+  cursor: pointer;
+}
+
+/* Modal y Diálogos */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: flex-end; /* En móvil entra desde abajo */
+  justify-content: center;
+  z-index: 100;
+  padding: 0;
+}
+
+.modal-sheet {
+  background-color: var(--bg-surface);
+  width: 100%;
+  max-height: 92vh;
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  overflow-y: auto;
+  box-shadow: var(--shadow-sheet);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Media Queries para Tablet y Desktop */
+@media (min-width: 600px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+  .modal-sheet {
+    max-width: 580px;
+    border-radius: var(--radius-xl);
+    max-height: 85vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+  }
+  .bottom-nav {
+    display: none;
+  }
+  .main-content {
+    padding-bottom: 2rem;
+  }
+  .grid-familiares {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.25rem;
+  }
+  .dashboard-columns {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+  }
+}
+
+/* Avatar de usuario */
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 1.8rem;
+}
+
+/* Barra de cambio rápido de miembro familiar (para pruebas) */
+.tester-bar {
+  background-color: var(--bg-surface-variant);
+  border-bottom: 1.5px solid var(--border-subtle);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow-x: auto;
+}
