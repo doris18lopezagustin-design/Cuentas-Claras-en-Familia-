@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { dataService } from "../services/dataService";
 
 export const PinModal = ({ 
@@ -12,7 +12,7 @@ export const PinModal = ({
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [showForgotTip, setShowForgotTip] = useState(false);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -20,66 +20,74 @@ export const PinModal = ({
       setError("");
       setIsShaking(false);
       setIsSuccess(false);
-      setShowForgotTip(false);
+      // Auto-focus en el campo de texto
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
     }
   }, [isOpen, member?.id]);
 
-  const handleDigit = useCallback((digit) => {
+  const handleValidateAndSubmit = (pinToTest) => {
+    const code = String(pinToTest || pin).trim();
+    if (!code) {
+      setError("Por favor escribe tu PIN de 4 dígitos.");
+      return;
+    }
+
+    const isValid = dataService.verifyPin(member.id, code);
+    if (isValid) {
+      setIsSuccess(true);
+      setError("");
+      setTimeout(() => {
+        onSuccess(member);
+      }, 300);
+    } else {
+      setIsShaking(true);
+      setError("PIN incorrecto. Intenta de nuevo (PIN inicial: 1234)");
+      setTimeout(() => {
+        setIsShaking(false);
+        setPin("");
+        if (inputRef.current) inputRef.current.focus();
+      }, 600);
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    handleValidateAndSubmit(pin);
+  };
+
+  const handleDigitPress = (digit) => {
     if (pin.length >= 4 || isSuccess) return;
     const nextPin = pin + digit;
     setPin(nextPin);
     setError("");
 
+    // Si completa los 4 dígitos, enfocar y validar
     if (nextPin.length === 4) {
-      const isValid = dataService.verifyPin(member.id, nextPin);
-      if (isValid) {
-        setIsSuccess(true);
-        setTimeout(() => {
-          onSuccess(member);
-        }, 300);
-      } else {
-        setIsShaking(true);
-        setError("PIN incorrecto. Intenta de nuevo.");
-        setTimeout(() => {
-          setIsShaking(false);
-          setPin("");
-        }, 600);
-      }
+      handleValidateAndSubmit(nextPin);
     }
-  }, [pin, isSuccess, member, onSuccess]);
+  };
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = () => {
     if (pin.length > 0) {
       setPin(prev => prev.slice(0, -1));
       setError("");
     }
-  }, [pin]);
+  };
 
-  const handleClear = useCallback(() => {
+  const handleClear = () => {
     setPin("");
     setError("");
-  }, []);
+    if (inputRef.current) inputRef.current.focus();
+  };
 
-  // Escuchar teclado físico
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (/^[0-9]$/.test(e.key)) {
-        e.preventDefault();
-        handleDigit(e.key);
-      } else if (e.key === "Backspace") {
-        e.preventDefault();
-        handleDelete();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, handleDigit, handleDelete, onClose]);
+  const handleUseDefaultPin = () => {
+    setPin("1234");
+    handleValidateAndSubmit("1234");
+  };
 
   if (!isOpen || !member) return null;
 
@@ -104,7 +112,7 @@ export const PinModal = ({
         onClick={e => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: "380px",
+          maxWidth: "400px",
           backgroundColor: "var(--bg-surface)",
           borderRadius: "var(--radius-xl)",
           padding: "1.75rem",
@@ -113,206 +121,233 @@ export const PinModal = ({
           textAlign: "center"
         }}
       >
-        {/* Encabezado y Avatar */}
-        <div style={{ position: "relative", display: "inline-block", marginBottom: "0.75rem" }}>
-          <div 
-            className="avatar avatar-xl" 
-            style={{ 
-              backgroundColor: member.color || "#0D9488", 
-              margin: "0 auto",
-              width: "72px",
-              height: "72px",
-              fontSize: "2.2rem",
-              border: `3px solid ${member.color || "#0D9488"}`
-            }}
-          >
-            {member.avatar || "👤"}
+        <form onSubmit={handleFormSubmit}>
+          {/* Avatar del Integrante */}
+          <div style={{ position: "relative", display: "inline-block", marginBottom: "0.5rem" }}>
+            <div 
+              className="avatar avatar-xl" 
+              style={{ 
+                backgroundColor: member.color || "#0D9488", 
+                margin: "0 auto",
+                width: "68px",
+                height: "68px",
+                fontSize: "2.1rem",
+                border: `3px solid ${member.color || "#0D9488"}`
+              }}
+            >
+              {member.avatar || "👤"}
+            </div>
+            <span 
+              style={{
+                position: "absolute",
+                bottom: "-2px",
+                right: "-2px",
+                backgroundColor: "var(--bg-surface)",
+                borderRadius: "50%",
+                padding: "2px",
+                fontSize: "1rem",
+                boxShadow: "var(--shadow-sm)"
+              }}
+            >
+              🔒
+            </span>
           </div>
-          <span 
+
+          <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)" }}>
+            Perfil de {member.name}
+          </h3>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.15rem", marginBottom: "1rem" }}>
+            Familia Agustín • Escribe tu PIN para entrar
+          </p>
+
+          {/* Campo de Entrada de PIN Visible con soporte para Enter */}
+          <div style={{ marginBottom: "1rem", animation: isShaking ? "pinShake 0.4s ease-in-out" : "none" }}>
+            <input
+              ref={inputRef}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              value={pin}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                setPin(val);
+                setError("");
+                if (val.length === 4) {
+                  handleValidateAndSubmit(val);
+                }
+              }}
+              placeholder="••••"
+              className="input"
+              style={{
+                textAlign: "center",
+                fontSize: "2rem",
+                letterSpacing: "0.5em",
+                fontWeight: 800,
+                height: "56px",
+                maxWidth: "240px",
+                margin: "0 auto",
+                backgroundColor: "var(--bg-surface-variant)",
+                border: isShaking 
+                  ? "2px solid #DC2626" 
+                  : isSuccess 
+                    ? "2px solid #059669" 
+                    : "2px solid var(--border-subtle)",
+                borderRadius: "var(--radius-lg)",
+                color: "var(--text-primary)"
+              }}
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Mensaje de Error o Éxito */}
+          <div style={{ minHeight: "24px", marginBottom: "0.75rem" }}>
+            {error && (
+              <span style={{ fontSize: "0.85rem", color: "#DC2626", fontWeight: 700 }}>
+                {error}
+              </span>
+            )}
+            {isSuccess && (
+              <span style={{ fontSize: "0.9rem", color: "#059669", fontWeight: 700 }}>
+                ✓ PIN correcto. Accediendo...
+              </span>
+            )}
+          </div>
+
+          {/* BOTÓN PRINCIPAL PARA ENTRAR */}
+          <button
+            type="submit"
+            className="btn btn-primary"
             style={{
-              position: "absolute",
-              bottom: "-2px",
-              right: "-2px",
-              backgroundColor: "var(--bg-surface)",
-              borderRadius: "50%",
-              padding: "2px",
-              fontSize: "1rem",
-              boxShadow: "var(--shadow-sm)"
+              width: "100%",
+              minHeight: "50px",
+              fontSize: "1.05rem",
+              fontWeight: 800,
+              borderRadius: "var(--radius-lg)",
+              marginBottom: "1rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem"
             }}
           >
-            🔒
-          </span>
-        </div>
+            <span>Entrar al perfil</span>
+            <span>➔</span>
+          </button>
 
-        <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)" }}>
-          {member.name}
-        </h3>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-          Familia Agustín • Ingresa tu PIN de 4 dígitos
-        </p>
-
-        {/* Puntos Indicadores del PIN */}
-        <div 
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            margin: "1.5rem 0 1rem 0",
-            animation: isShaking ? "pinShake 0.4s ease-in-out" : "none"
-          }}
-        >
-          {[0, 1, 2, 3].map(index => {
-            const isFilled = pin.length > index;
-            return (
-              <div
-                key={index}
+          {/* Teclado Numérico Táctil */}
+          <div 
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "0.5rem",
+              maxWidth: "280px",
+              margin: "0 auto 1rem auto"
+            }}
+          >
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(num => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => handleDigitPress(num)}
+                className="btn btn-tonal"
                 style={{
-                  width: "18px",
-                  height: "18px",
-                  borderRadius: "50%",
-                  border: isShaking 
-                    ? "2px solid #DC2626" 
-                    : isSuccess 
-                      ? "2px solid #059669" 
-                      : isFilled 
-                        ? `2px solid ${member.color || "var(--primary)"}` 
-                        : "2px solid var(--border-subtle)",
-                  backgroundColor: isShaking 
-                    ? "#DC2626" 
-                    : isSuccess 
-                      ? "#059669" 
-                      : isFilled 
-                        ? (member.color || "var(--primary)") 
-                        : "transparent",
-                  transition: "all 0.15s ease",
-                  transform: isFilled ? "scale(1.15)" : "scale(1)"
+                  height: "50px",
+                  fontSize: "1.35rem",
+                  fontWeight: 700,
+                  borderRadius: "var(--radius-md)",
+                  backgroundColor: "var(--bg-surface-variant)",
+                  border: "1px solid var(--border-subtle)",
+                  color: "var(--text-primary)"
                 }}
-              />
-            );
-          })}
-        </div>
+              >
+                {num}
+              </button>
+            ))}
 
-        {/* Mensaje de Error o Éxito */}
-        <div style={{ minHeight: "24px", marginBottom: "0.75rem" }}>
-          {error && (
-            <span style={{ fontSize: "0.85rem", color: "#DC2626", fontWeight: 700 }}>
-              {error}
-            </span>
-          )}
-          {isSuccess && (
-            <span style={{ fontSize: "0.85rem", color: "#059669", fontWeight: 700 }}>
-              ✓ PIN correcto. Accediendo...
-            </span>
-          )}
-        </div>
-
-        {/* Teclado Numérico Táctil */}
-        <div 
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "0.6rem",
-            maxWidth: "280px",
-            margin: "0 auto 1.25rem auto"
-          }}
-        >
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(num => (
             <button
-              key={num}
               type="button"
-              onClick={() => handleDigit(num)}
+              onClick={handleClear}
               className="btn btn-tonal"
               style={{
-                height: "56px",
-                fontSize: "1.45rem",
+                height: "50px",
+                fontSize: "0.8rem",
                 fontWeight: 700,
-                borderRadius: "var(--radius-lg)",
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "transparent",
+                color: "var(--text-muted)"
+              }}
+              title="Borrar todo"
+            >
+              Borrar
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleDigitPress("0")}
+              className="btn btn-tonal"
+              style={{
+                height: "50px",
+                fontSize: "1.35rem",
+                fontWeight: 700,
+                borderRadius: "var(--radius-md)",
                 backgroundColor: "var(--bg-surface-variant)",
                 border: "1px solid var(--border-subtle)",
                 color: "var(--text-primary)"
               }}
             >
-              {num}
+              0
             </button>
-          ))}
 
-          {/* Botón Borrar Todo */}
-          <button
-            type="button"
-            onClick={handleClear}
-            className="btn btn-tonal"
-            style={{
-              height: "56px",
-              fontSize: "0.85rem",
-              fontWeight: 700,
-              borderRadius: "var(--radius-lg)",
-              backgroundColor: "transparent",
-              color: "var(--text-muted)"
-            }}
-            title="Borrar todo"
-          >
-            Borrar
-          </button>
-
-          {/* Botón 0 */}
-          <button
-            type="button"
-            onClick={() => handleDigit("0")}
-            className="btn btn-tonal"
-            style={{
-              height: "56px",
-              fontSize: "1.45rem",
-              fontWeight: 700,
-              borderRadius: "var(--radius-lg)",
-              backgroundColor: "var(--bg-surface-variant)",
-              border: "1px solid var(--border-subtle)",
-              color: "var(--text-primary)"
-            }}
-          >
-            0
-          </button>
-
-          {/* Botón Retroceso */}
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="btn btn-tonal"
-            style={{
-              height: "56px",
-              fontSize: "1.2rem",
-              fontWeight: 700,
-              borderRadius: "var(--radius-lg)",
-              backgroundColor: "transparent",
-              color: "var(--text-muted)"
-            }}
-            title="Borrar último"
-          >
-            ⌫
-          </button>
-        </div>
-
-        {/* Ayuda y Recordatorio del PIN */}
-        <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "0.75rem" }}>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-            💡 PIN inicial por defecto: <strong>1234</strong>
-          </p>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.5rem" }}>
             <button
               type="button"
-              onClick={() => setShowForgotTip(!showForgotTip)}
+              onClick={handleDelete}
+              className="btn btn-tonal"
               style={{
-                background: "none",
-                border: "none",
-                color: "var(--primary)",
-                fontSize: "0.78rem",
+                height: "50px",
+                fontSize: "1.1rem",
                 fontWeight: 700,
-                cursor: "pointer",
-                padding: "0.25rem"
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "transparent",
+                color: "var(--text-muted)"
+              }}
+              title="Borrar último dígito"
+            >
+              ⌫
+            </button>
+          </div>
+
+          {/* Acceso Rápido con PIN por defecto 1234 */}
+          <div style={{
+            backgroundColor: "var(--bg-surface-variant)",
+            padding: "0.75rem",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid var(--border-subtle)",
+            marginBottom: "0.75rem"
+          }}>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
+              💡 PIN inicial por defecto: <strong>1234</strong>
+            </p>
+            <button
+              type="button"
+              onClick={handleUseDefaultPin}
+              className="btn btn-tonal"
+              style={{
+                fontSize: "0.8rem",
+                padding: "0.3rem 0.75rem",
+                borderRadius: "var(--radius-full)",
+                backgroundColor: "var(--bg-surface)",
+                border: "1px solid var(--border-subtle)",
+                fontWeight: 700,
+                color: "var(--primary)"
               }}
             >
-              ¿Olvidaste tu PIN?
+              Usar PIN por defecto (1234) y entrar
             </button>
+          </div>
 
+          {/* Botón Cancelar */}
+          <div>
             <button
               type="button"
               onClick={onClose}
@@ -320,30 +355,16 @@ export const PinModal = ({
                 background: "none",
                 border: "none",
                 color: "var(--text-muted)",
-                fontSize: "0.78rem",
+                fontSize: "0.85rem",
                 fontWeight: 700,
                 cursor: "pointer",
-                padding: "0.25rem"
+                padding: "0.35rem"
               }}
             >
-              Cancelar
+              Elegir a otro familiar / Cancelar
             </button>
           </div>
-
-          {showForgotTip && (
-            <div style={{
-              backgroundColor: "var(--bg-surface-variant)",
-              padding: "0.6rem 0.75rem",
-              borderRadius: "var(--radius-md)",
-              fontSize: "0.75rem",
-              color: "var(--text-secondary)",
-              marginTop: "0.5rem",
-              textAlign: "left"
-            }}>
-              Si no lo has cambiado, tu PIN es <strong>1234</strong>. Puedes cambiarlo en cualquier momento desde la sección <strong>Mi Cuenta</strong>.
-            </div>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   );
