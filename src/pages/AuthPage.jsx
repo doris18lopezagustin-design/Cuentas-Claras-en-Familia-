@@ -1,6 +1,7 @@
 ﻿import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { IconCheck, IconShare, IconUser } from "../components/Icons";
+import { PinModal } from "../components/PinModal";
 
 export const AuthPage = () => {
   const { members, switchMember, loginWithGoogle, loginWithEmailCode, joinFamilyByCode } = useAuth();
@@ -9,6 +10,7 @@ export const AuthPage = () => {
   const [inviteCode, setInviteCode] = useState("");
   const [message, setMessage] = useState("");
   const [isNewUser, setIsNewUser] = useState(false);
+  const [selectedMemberForPin, setSelectedMemberForPin] = useState(null);
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
@@ -17,6 +19,15 @@ export const AuthPage = () => {
     if (user) {
       setMessage(`¡Bienvenido/a, ${user.name}!`);
     }
+  };
+
+  const handleMemberClick = (member) => {
+    setSelectedMemberForPin(member);
+  };
+
+  const handlePinSuccess = (member) => {
+    switchMember(member.id);
+    setSelectedMemberForPin(null);
   };
 
   return (
@@ -44,11 +55,11 @@ export const AuthPage = () => {
             Cuentas Claras en Familia
           </h1>
           <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>
-            La libreta compartida para que la familia anote gastos y préstamos sin enredos.
+            La libreta compartida para que la <strong>Familia Agustín</strong> anote gastos y préstamos sin enredos.
           </p>
         </div>
 
-        {/* Acceso Rápido con la Familia García de Prueba */}
+        {/* Acceso por Perfil de la Familia Agustín */}
         <div style={{
           backgroundColor: "var(--bg-surface-variant)",
           padding: "1.25rem",
@@ -56,28 +67,33 @@ export const AuthPage = () => {
           marginBottom: "1.5rem"
         }}>
           <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", display: "block", marginBottom: "0.75rem" }}>
-            Prueba inmediata con la Familia García:
+            🔒 Elige tu perfil (requiere PIN):
           </span>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {members.map(member => (
               <button
                 key={member.id}
                 type="button"
-                onClick={() => switchMember(member.id)}
+                onClick={() => handleMemberClick(member)}
                 className="btn btn-tonal"
                 style={{
                   justifyContent: "flex-start",
                   minHeight: "52px",
                   backgroundColor: "var(--bg-surface)",
-                  border: "1.5px solid var(--border-subtle)"
+                  border: "1.5px solid var(--border-subtle)",
+                  padding: "0.5rem 1rem",
+                  borderRadius: "var(--radius-lg)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem"
                 }}
               >
                 <span style={{ fontSize: "1.5rem" }}>{member.avatar}</span>
                 <span style={{ fontWeight: 800, fontSize: "1rem" }}>
-                  Entrar como {member.name} {member.simpleMode ? "(Modo sencillo 🌸)" : ""}
+                  Entrar como {member.name} {member.simpleMode ? "(Modo sencillo 👵)" : ""}
                 </span>
-                <span style={{ marginLeft: "auto", fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                  →
+                <span style={{ marginLeft: "auto", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+                  🔒
                 </span>
               </button>
             ))}
@@ -126,6 +142,14 @@ export const AuthPage = () => {
           </form>
         </div>
       </div>
+
+      {/* Modal de PIN para ingresar desde AuthPage */}
+      <PinModal
+        isOpen={!!selectedMemberForPin}
+        member={selectedMemberForPin}
+        onClose={() => setSelectedMemberForPin(null)}
+        onSuccess={handlePinSuccess}
+      />
     </div>
   );
 };

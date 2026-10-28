@@ -24,7 +24,11 @@ const COLOR_OPTIONS = [
 ];
 
 export const AccountPage = ({ onOpenInviteModal }) => {
-  const { currentUser, updateCurrentUser, logout, currentFamily } = useAuth();
+  const { currentUser, updateCurrentUser, logout, currentFamily, changeCurrentUserPin, lockProfile } = useAuth();
+  const [currentPinInput, setCurrentPinInput] = useState("");
+  const [newPinInput, setNewPinInput] = useState("");
+  const [confirmPinInput, setConfirmPinInput] = useState("");
+  const [pinMessage, setPinMessage] = useState({ text: "", type: "" });
   const { theme, setTheme, fontSize, setFontSize } = useTheme();
 
   const [name, setName] = useState(currentUser?.name || "");
@@ -34,6 +38,25 @@ export const AccountPage = ({ onOpenInviteModal }) => {
   const [savedMessage, setSavedMessage] = useState("");
   const [showPwaGuide, setShowPwaGuide] = useState(false);
   const [showFaqGuide, setShowFaqGuide] = useState(false);
+
+  
+  const handleUpdatePin = (e) => {
+    e.preventDefault();
+    if (newPinInput !== confirmPinInput) {
+      setPinMessage({ text: "Los 4 dígitos del nuevo PIN no coinciden.", type: "error" });
+      return;
+    }
+    const res = changeCurrentUserPin(currentPinInput, newPinInput);
+    if (res.success) {
+      setPinMessage({ text: "✓ Tu nuevo PIN de seguridad ha sido guardado exitosamente.", type: "success" });
+      setCurrentPinInput("");
+      setNewPinInput("");
+      setConfirmPinInput("");
+      setTimeout(() => setPinMessage({ text: "", type: "" }), 3500);
+    } else {
+      setPinMessage({ text: res.error, type: "error" });
+    }
+  };
 
   const handleSave = (e) => {
     e.preventDefault();

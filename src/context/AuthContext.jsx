@@ -10,8 +10,17 @@ export const AuthProvider = ({ children }) => {
   const [activeUserId, setActiveUserId] = useState(() => dataService.getActiveUserId());
   const [loading, setLoading] = useState(false);
 
+  // Estado de bloqueo de perfil con PIN
+  const [isProfileLocked, setIsProfileLocked] = useState(() => {
+    if (typeof window !== "undefined") {
+      const unlocked = sessionStorage.getItem("cuentas_claras_unlocked_user");
+      // Si ya desbloqueó en esta pestaña/sesión, entra directo; si no, pide PIN
+      return !unlocked;
+    }
+    return false;
+  });
+
   useEffect(() => {
-    // Suscribirse a cambios en el servicio de datos
     const unsubscribe = dataService.subscribe(() => {
       setFamily(dataService.getFamily());
       setActiveUserId(dataService.getActiveUserId());
@@ -22,10 +31,46 @@ export const AuthProvider = ({ children }) => {
   const members = family?.members || INITIAL_MEMBERS;
   const currentUser = members.find(m => m.id === activeUserId) || members[0];
 
-  // Cambiar de familiar activo (ideal para probar los saldos y privacidad par a par)
+  // Cambiar de familiar activo (interno)
   const switchMember = (memberId) => {
     dataService.setActiveUserId(memberId);
     setActiveUserId(memberId);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("cuentas_claras_unlocked_user", memberId);
+    }
+    setIsProfileLocked(false);
+  };
+
+  // Bloquear perfil actual para proteger la app
+  const lockProfile = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("cuentas_claras_unlocked_user");
+    }
+    setIsProfileLocked(true);
+  };
+
+  // Desbloquear perfil con verificación de PIN
+  const unlockProfileWithPin = (memberId, pin) => {
+    const isValid = dataService.verifyPin(memberId, pin);
+    if (isValid) {
+      switchMember(memberId);
+      return { success: true };
+    }
+    return { success: false, error: "PIN incorrecto. Intenta de nuevo." };
+  };
+
+  // Cambiar PIN del usuario actual
+  const changeCurrentUserPin = (oldPin, newPin) => {
+    if (!currentUser) return { success: false, error: "No hay usuario activo" };
+    const currentExpected = currentUser.pin || "1234";
+    if (String(oldPin).trim() !== String(currentExpected).trim()) {
+      return { success: false, error: "El PIN actual no coincide" };
+    }
+    if (!newPin || String(newPin).trim().length !== 4 || !/^\d{4}$/.test(String(newPin).trim())) {
+      return { success: false, error: "El nuevo PIN debe tener exactamente 4 dígitos numéricos" };
+    }
+    dataService.updateMemberPin(currentUser.id, String(newPin).trim());
+    return { success: true };
   };
 
   // Actualizar preferencias o perfil del usuario actual
@@ -47,18 +92,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await signInWithPopup(auth, googleProvider);
       if (res.user) {
-        // Enlazar o crear miembro
         const newMember = {
           id: res.user.uid,
           name: res.user.displayName ? res.user.displayName.split(" ")[0] : "Usuario",
-          fullName: res.user.displayName || "Usuario",
+          fullName: res.user.displayName || "Usuario Agustín",
           email: res.user.email,
-          avatar: "🧑",
+          avatar: "👤",
           color: "#0D9488",
+          pin: "1234",
           simpleMode: false,
           fontSize: "normal"
         };
-        // Agregar si no existe
         const exists = members.find(m => m.email === res.user.email || m.id === res.user.uid);
         if (!exists) {
           family.members.push(newMember);
@@ -83,10 +127,11 @@ export const AuthProvider = ({ children }) => {
     const newMember = {
       id: "user-" + Date.now(),
       name: name.split(" ")[0],
-      fullName: name,
+      fullName: name + " Agustín",
       email: email,
-      avatar: "😊",
+      avatar: "👤",
       color: "#059669",
+      pin: "1234",
       simpleMode: false,
       fontSize: "normal"
     };
@@ -102,8 +147,7 @@ export const AuthProvider = ({ children }) => {
     } catch {
       // Ignorar si no está autenticado en firebase
     }
-    // Restablecer a Mamá
-    switchMember("user-mama");
+    lockProfile();
   };
 
   const joinFamilyByCode = (inviteCode) => {
@@ -112,6 +156,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetAllData = () => {
     dataService.resetToInitialData();
+    setIsProfileLocked(false);
   };
 
   return (
@@ -121,6 +166,10 @@ export const AuthProvider = ({ children }) => {
         currentFamily: family,
         members,
         membersMap: members.reduce((acc, m) => ({ ...acc, [m.id]: m }), {}),
+        isProfileLocked,
+        lockProfile,
+        unlockProfileWithPin,
+        changeCurrentUserPin,
         switchMember,
         updateCurrentUser,
         toggleSimpleMode,

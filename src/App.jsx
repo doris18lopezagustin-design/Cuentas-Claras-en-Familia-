@@ -7,6 +7,7 @@ import { dataService } from "./services/dataService";
 import { Sidebar } from "./components/Sidebar";
 import { BottomNav } from "./components/BottomNav";
 import { FamilyMemberSwitcher } from "./components/FamilyMemberSwitcher";
+import { ProfileLockScreen } from "./components/ProfileLockScreen";
 import { AnotarModal } from "./components/AnotarModal";
 import { AbonoModal } from "./components/AbonoModal";
 import { MovementDetailModal } from "./components/MovementDetailModal";
@@ -25,7 +26,7 @@ import { AccountPage } from "./pages/AccountPage";
 import { AuthPage } from "./pages/AuthPage";
 
 const MainLayout = () => {
-  const { currentUser, members, membersMap } = useAuth();
+  const { currentUser, members, membersMap, isProfileLocked } = useAuth();
   
   // Lista de movimientos en vivo
   const [movements, setMovements] = useState(() => dataService.getMovements());
@@ -58,6 +59,10 @@ const MainLayout = () => {
 
   // Toast de Deshacer (10 segundos)
   const [lastSavedMovement, setLastSavedMovement] = useState(null);
+
+  if (isProfileLocked) {
+    return <ProfileLockScreen />;
+  }
 
   if (!currentUser) {
     return <AuthPage />;

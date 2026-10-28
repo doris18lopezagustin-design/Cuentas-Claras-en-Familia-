@@ -11,7 +11,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 
 export const Sidebar = ({ currentTab, onSelectTab, onOpenAnotar, pendingReviewCount = 0 }) => {
-  const { currentUser, currentFamily } = useAuth();
+  const { currentUser, currentFamily, lockProfile } = useAuth();
   const isSimple = currentUser?.simpleMode;
 
   return (

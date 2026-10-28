@@ -15,7 +15,8 @@ export const INITIAL_MEMBERS = [
   {
     id: "user-mama",
     name: "Mamá",
-    fullName: "María García",
+    fullName: "María Agustín",
+    pin: "1234",
     email: "mama@cuentasclaras.gt",
     avatar: "👩",
     color: "#4338CA",
@@ -26,7 +27,8 @@ export const INITIAL_MEMBERS = [
   {
     id: "user-ana",
     name: "Ana",
-    fullName: "Ana García",
+    fullName: "Ana Agustín",
+    pin: "1234",
     email: "ana@cuentasclaras.gt",
     avatar: "👧",
     color: "#059669",
@@ -37,7 +39,8 @@ export const INITIAL_MEMBERS = [
   {
     id: "user-luis",
     name: "Luis",
-    fullName: "Luis García",
+    fullName: "Luis Agustín",
+    pin: "1234",
     email: "luis@cuentasclaras.gt",
     avatar: "👨",
     color: "#2563EB",
@@ -48,7 +51,8 @@ export const INITIAL_MEMBERS = [
   {
     id: "user-sofia",
     name: "Sofía",
-    fullName: "Sofía García",
+    fullName: "Sofía Agustín",
+    pin: "1234",
     email: "sofia@cuentasclaras.gt",
     avatar: "👩‍🦰",
     color: "#D97706",
@@ -59,7 +63,8 @@ export const INITIAL_MEMBERS = [
   {
     id: "user-carla",
     name: "Carla",
-    fullName: "Carla García",
+    fullName: "Carla Agustín",
+    pin: "1234",
     email: "carla@cuentasclaras.gt",
     avatar: "👧‍🦱",
     color: "#9333EA",
@@ -71,8 +76,8 @@ export const INITIAL_MEMBERS = [
 
 export const INITIAL_FAMILY = {
   id: "fam-garcia",
-  name: "Familia García",
-  inviteCode: "FAM789",
+  name: "Familia Agustín",
+  inviteCode: "AGUSTIN789",
   createdAt: "2026-10-01T12:00:00.000Z",
   members: INITIAL_MEMBERS,
   memberIds: INITIAL_MEMBERS.map(m => m.id)
